@@ -4171,14 +4171,14 @@ function renderSidebar() {
     phaseGroup.className = 'phase-group';
     const header = document.createElement('div');
     header.className = 'phase-header';
-    header.innerHTML = `<span>\${phase.name}</span><span class="phase-toggle">▼</span>`;
+    header.innerHTML = `<span>${phase.name}</span><span class="phase-toggle">▼</span>`;
     const weeksList = document.createElement('div');
     weeksList.className = 'phase-weeks';
     phase.weeks.forEach(week => {
       const weekItem = document.createElement('div');
       weekItem.className = 'week-item';
       if (week.id === currentWeek) weekItem.classList.add('active');
-      weekItem.textContent = `Week \${week.id}`;
+      weekItem.textContent = `Week ${week.id}`;
       weekItem.onclick = (e) => { e.stopPropagation(); switchWeek(week.id); };
       weeksList.appendChild(weekItem);
     });
@@ -4197,21 +4197,21 @@ function renderContent() {
   if (!week) return;
   const headerDiv = document.getElementById('week-header');
   headerDiv.innerHTML = `
-    <h2 class="week-title">\${week.title}</h2>
+    <h2 class="week-title">${week.title}</h2>
     <div class="week-meta">
-      <div class="week-meta-item"><span class="week-meta-dot"></span><span>Week \${week.id}</span></div>
-      <div class="week-meta-item"><span class="week-meta-dot"></span><span>Phase: \${week.phaseName}</span></div>
-      <div class="week-meta-item"><span class="week-meta-dot"></span><span>Dataset: \${week.dataset}</span></div>
+      <div class="week-meta-item"><span class="week-meta-dot"></span><span>Week ${week.id}</span></div>
+      <div class="week-meta-item"><span class="week-meta-dot"></span><span>Phase: ${week.phaseName}</span></div>
+      <div class="week-meta-item"><span class="week-meta-dot"></span><span>Dataset: ${week.dataset}</span></div>
     </div>
   `;
 
   const tabsDiv = document.getElementById('tabs');
   tabsDiv.innerHTML = `
     <div class="tabs">
-      <button class="tab-button \${currentTab === 'tut' ? 'active tut' : 'tut'}" onclick="switchTab('tut')">Tutorial</button>
-      <button class="tab-button \${currentTab === 'howto' ? 'active howto' : 'howto'}" onclick="switchTab('howto')">How-to</button>
-      <button class="tab-button \${currentTab === 'expl' ? 'active expl' : 'expl'}" onclick="switchTab('expl')">Explanation</button>
-      <button class="tab-button \${currentTab === 'ref' ? 'active ref' : 'ref'}" onclick="switchTab('ref')">Reference</button>
+      <button class="tab-button ${currentTab === 'tut' ? 'active tut' : 'tut'}" onclick="switchTab('tut')">Tutorial</button>
+      <button class="tab-button ${currentTab === 'howto' ? 'active howto' : 'howto'}" onclick="switchTab('howto')">How-to</button>
+      <button class="tab-button ${currentTab === 'expl' ? 'active expl' : 'expl'}" onclick="switchTab('expl')">Explanation</button>
+      <button class="tab-button ${currentTab === 'ref' ? 'active ref' : 'ref'}" onclick="switchTab('ref')">Reference</button>
     </div>
   `;
 
@@ -4224,53 +4224,53 @@ function renderContent() {
   }
 
   const markBtn = document.getElementById('mark-complete-btn');
-  const isCompleted = completed.has(`\${week.id}-\${currentTab}`);
+  const isCompleted = completed.has(`${week.id}-${currentTab}`);
   markBtn.textContent = isCompleted ? '✓ Completed' : 'Mark Complete';
   markBtn.classList.toggle('completed', isCompleted);
   markBtn.onclick = () => markDone(week.id, currentTab);
 }
 
 function renderTabContent(week, tabData, tabKey) {
-  let html = `<div class="tab-content active"><div class="diataxis-banner \${tabKey}">\${getDiataxisLabel(tabKey)}: \${tabData.title}</div>`;
-  if (tabData.body) html += `<p class="body-text">\${tabData.body}</p>`;
+  let html = `<div class="tab-content active"><div class="diataxis-banner ${tabKey}">${getDiataxisLabel(tabKey)}: ${tabData.title}</div>`;
+  if (tabData.body) html += `<p class="body-text">${tabData.body}</p>`;
   if (tabData.analogy) {
-    html += `<div class="analogy-box"><div class="analogy-icon">\${tabData.analogy.icon}</div><div class="analogy-text"><div class="analogy-label">Analogy</div><div class="analogy-content">\${tabData.analogy.text}</div></div></div>`;
+    html += `<div class="analogy-box"><div class="analogy-icon">${tabData.analogy.icon}</div><div class="analogy-text"><div class="analogy-label">Analogy</div><div class="analogy-content">${tabData.analogy.text}</div></div></div>`;
   }
   if (tabData.concept) {
-    html += `<div class="concept-box"><div class="concept-label">Key Concept</div><div class="concept-content">\${tabData.concept}</div></div>`;
+    html += `<div class="concept-box"><div class="concept-label">Key Concept</div><div class="concept-content">${tabData.concept}</div></div>`;
   }
   if (tabData.steps && tabData.steps.length > 0) {
     html += '<div class="section-title">Steps</div><div class="steps">';
     tabData.steps.forEach(step => {
-      html += `<div class="step"><div class="step-number">\${step.n}</div><div class="step-content"><div class="step-title">\${step.title}</div><div class="step-body">\${step.body}</div></div></div>`;
+      html += `<div class="step"><div class="step-number">${step.n}</div><div class="step-content"><div class="step-title">${step.title}</div><div class="step-body">${step.body}</div></div></div>`;
     });
     html += '</div>';
   }
   if (tabData.tables && tabData.tables.length > 0) {
     html += '<div class="section-title">Reference</div>';
     tabData.tables.forEach(table => {
-      html += `<div class="reference-table"><div class="table-title">\${table.title}</div><table><thead><tr>`;
-      table.rows[0].forEach(cell => { html += `<th>\${cell}</th>`; });
+      html += `<div class="reference-table"><div class="table-title">${table.title}</div><table><thead><tr>`;
+      table.rows[0].forEach(cell => { html += `<th>${cell}</th>`; });
       html += '</tr></thead><tbody>';
       for (let i = 1; i < table.rows.length; i++) {
         html += '<tr>';
-        table.rows[i].forEach(cell => { html += `<td>\${cell}</td>`; });
+        table.rows[i].forEach(cell => { html += `<td>${cell}</td>`; });
         html += '</tr>';
       }
       html += '</tbody></table></div>';
     });
   }
   if (tabData.code) {
-    const codeId = `code-\${week.id}-\${tabKey}`;
-    html += `<div class="code-section"><div class="code-label">Code Example</div><div class="code-wrapper"><button class="code-copy-btn" onclick="copyCode('\${codeId}', this)">Copy</button><pre><code id="\${codeId}">\${escapeHtml(tabData.code)}</code></pre></div></div>`;
+    const codeId = `code-${week.id}-${tabKey}`;
+    html += `<div class="code-section"><div class="code-label">Code Example</div><div class="code-wrapper"><button class="code-copy-btn" onclick="copyCode('${codeId}', this)">Copy</button><pre><code id="${codeId}">${escapeHtml(tabData.code)}</code></pre></div></div>`;
   }
   if (tabData.quiz) {
-    const quizId = `quiz-\${week.id}-\${tabKey}`;
-    html += `<div class="quiz-section"><div class="quiz-question">\${tabData.quiz.q}</div><div class="quiz-options">`;
+    const quizId = `quiz-${week.id}-${tabKey}`;
+    html += `<div class="quiz-section"><div class="quiz-question">${tabData.quiz.q}</div><div class="quiz-options">`;
     tabData.quiz.opts.forEach((opt, i) => {
-      html += `<label class="quiz-option"><input type="radio" name="\${quizId}" value="\${i}" onchange="answer(\${week.id}, '\${tabKey}', \${i}, \${tabData.quiz.correct})"><span>\${opt}</span></label>`;
+      html += `<label class="quiz-option"><input type="radio" name="${quizId}" value="${i}" onchange="answer(${week.id}, '${tabKey}', ${i}, ${tabData.quiz.correct})"><span>${opt}</span></label>`;
     });
-    html += `</div><div class="quiz-feedback" id="\${quizId}-feedback"></div></div>`;
+    html += `</div><div class="quiz-feedback" id="${quizId}-feedback"></div></div>`;
   }
   html += '</div>';
   return html;
@@ -4282,7 +4282,7 @@ function getDiataxisLabel(tabKey) {
 }
 
 function markDone(weekId, tabKey) {
-  const key = `\${weekId}-\${tabKey}`;
+  const key = `${weekId}-${tabKey}`;
   if (completed.has(key)) completed.delete(key);
   else completed.add(key);
   updateProgress();
@@ -4290,8 +4290,8 @@ function markDone(weekId, tabKey) {
 }
 
 function answer(weekId, tabKey, chosen, correct) {
-  const quizId = `quiz-\${weekId}-\${tabKey}`;
-  const feedback = document.getElementById(`\${quizId}-feedback`);
+  const quizId = `quiz-${weekId}-${tabKey}`;
+  const feedback = document.getElementById(`${quizId}-feedback`);
   const isCorrect = chosen === correct;
   if (isCorrect) {
     feedback.textContent = '✓ ' + weeks.find(w => w.id === weekId).tabs[tabKey].quiz.feedback;
@@ -4315,8 +4315,8 @@ function updateProgress() {
   const total = 48;
   const count = completed.size;
   const percent = (count / total) * 100;
-  document.getElementById('progress-text').textContent = `\${count} / \${total}`;
-  document.querySelector('.progress-fill').style.width = `\${percent}%`;
+  document.getElementById('progress-text').textContent = `${count} / ${total}`;
+  document.querySelector('.progress-fill').style.width = `${percent}%`;
 }
 
 function escapeHtml(text) {
