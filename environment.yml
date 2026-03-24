@@ -1,0 +1,54 @@
+name: bigdata-course
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.11
+  # Core distributed computing
+  - pyspark=3.5
+  - dask=2024.1
+  - distributed=2024.1
+  - xarray
+  - netcdf4
+  - h5py
+  - zarr
+  # AWS & cloud
+  - boto3
+  - s3fs
+  - aiobotocore
+  # Geospatial
+  - geopandas
+  - rioxarray
+  - pyproj
+  - shapely
+  # Data & analytics
+  - pandas
+  - numpy
+  - pyarrow
+  - fastparquet
+  - duckdb
+  - sqlalchemy
+  # Visualization
+  - matplotlib
+  - seaborn
+  - plotly
+  - folium
+  # Jupyter
+  - jupyterlab
+  - ipywidgets
+  - jupyter-bokeh
+  # Development
+  - pytest
+  - black
+  - ruff
+  - pre-commit
+  # Utilities
+  - requests
+  - tqdm
+  - pyyaml
+  - python-dotenv
+  - pip:
+    - delta-spark==3.1.0
+    - great-expectations
+    - localstack

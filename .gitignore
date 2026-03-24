@@ -1,0 +1,60 @@
+# Data files (downloaded via setup script)
+data/taxi/
+data/pluto/
+data/epa_aqs/
+data/chirps/
+data/era5/
+data/census/
+data/osm/
+data/who/
+!data/sample/
+!data/README.md
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_metadata/
+
+# Environments
+.env
+.venv/
+venv/
+bigdata-env/
+
+# Spark
+derby.log
+metastore_db/
+spark-warehouse/
+*.crc
+
+# Dask
+dask-worker-space/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# AWS
+.aws/
+localstack/
+
+# Outputs
+*.parquet
+*.delta/
+*.zarr/
+output/
