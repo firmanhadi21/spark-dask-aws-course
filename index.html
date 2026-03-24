@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big Data Engineering: Spark, Dask & AWS — Firman Hadi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #21262d;
+  --border: #30363d;
+  --border2: #444c56;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #6e7681;
+  --green: #2ea043;
+  --green-light: #3fb950;
+  --green-dim: #1a3a22;
+  --green-glow: rgba(46,160,67,0.15);
+  --blue: #388bfd;
+  --blue-dim: #0d2044;
+  --amber: #d29922;
+  --amber-dim: #2d1f00;
+  --coral: #f0883e;
+  --coral-dim: #2d1700;
+  --accent: #2ea043;
+  --mono: 'IBM Plex Mono', monospace;
+  --display: 'Syne', sans-serif;
+  --serif: 'Lora', serif;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--display);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.site-header {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0 2rem;
+}
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  gap: 1rem;
+}
+.logo {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--green-light);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.logo-dot { width: 8px; height: 8px; background: var(--green-light); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.progress-wrap {
+  flex: 1;
+  max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.progress-track {
+  height: 3px;
+  background: var(--bg3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--green-light);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+.progress-text {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--mono);
+}
+
+.header-tag {
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--text3);
+  border: 1px solid var(--border);
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* ── HERO ── */
+.hero {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 4rem 2rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -100px; right: -100px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(46,160,67,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-inner { max-width: 1100px; margin: 0 auto; }
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green-light);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hero-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--green-light); }
+
+.hero h1 {
+  font-family: var(--display);
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+}
+.hero h1 span { color: var(--green-light); }
+
+.hero-desc {
+  font-family: var(--serif);
+  font-size: 17px;
+  color: var(--text2);
+  max-width: 600px;
+  line-height: 1.75;
+  margin-bottom: 2rem;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.meta-pill {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.meta-pill svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ── MAIN LAYOUT ── */
+.main-wrap { max-width: 1100px; margin: 0 auto; padding: 2rem; display: grid; grid-template-columns: 240px 1fr; gap: 2rem; }
+@media (max-width: 768px) { .main-wrap { grid-template-columns: 1fr; } }
+
+/* ── SIDEBAR ── */
+.sidebar { position: sticky; top: 72px; align-self: start; }
+.sidebar-section { margin-bottom: 1.5rem; }
+.sidebar-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  padding: 0 4px;
+}
+.track-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  border: none;
+  background: transparent;
+  color: var(--text2);
+  font-family: var(--display);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+}
+.track-btn:hover { background: var(--bg3); color: var(--text); }
+.track-btn.active { background: var(--green-dim); color: var(--green-light); border: 1px solid var(--green-dim); }
+.track-icon {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  background: var(--bg3);
+}
+.track-btn.active .track-icon { background: var(--green-dim); }
+
+.mod-list { margin-top: 0.25rem; padding-left: 0; }
+.mod-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text3);
+  transition: all 0.15s;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+.mod-item:hover { color: var(--text2); background: var(--bg3); }
+.mod-item.active { color: var(--green-light); }
+.mod-item.done { color: var(--text2); }
+.mod-num {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px;
+  font-family: var(--mono);
+  flex-shrink: 0;
+}
+.mod-item.done .mod-num { background: var(--green-dim); border-color: var(--green); color: var(--green-light); }
+.mod-item.active .mod-num { background: var(--green-dim); border-color: var(--green-light); color: var(--green-light); }
+
+/* ── CONTENT ── */
+.content-area {}
+
+.lesson-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.lesson-title-block {}
+.lesson-breadcrumb {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  margin-bottom: 6px;
+}
+.lesson-title-block h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-family: var(--mono);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.badge-beginner { background: var(--green-dim); color: var(--green-light); border: 1px solid var(--green); }
+.badge-intermediate { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
+.badge-advanced { background: var(--coral-dim); color: var(--coral); border: 1px solid var(--coral); }
+
+.lesson-body {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--text2);
+  line-height: 1.85;
+  margin-bottom: 1.5rem;
+}
+
+.analogy-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blue);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.analogy-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.analogy-text { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--text2); line-height: 1.7; }
+
+.concept-box {
+  background: var(--green-glow);
+  border: 1px solid rgba(46,160,67,0.3);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+}
+.concept-box strong { color: var(--green-light); font-weight: 500; }
+
+/* ── CODE BLOCK ── */
+.code-wrap { margin: 1.5rem 0; }
+.code-header {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.code-lang {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.code-lang-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; }
+.copy-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.copy-btn:hover { color: var(--text); border-color: var(--border2); }
+.copy-btn.copied { color: var(--green-light); border-color: var(--green); }
+
+pre {
+  background: #010409;
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 1.25rem;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: #c9d1d9;
+}
+.cm { color: #6a737d; }
+.ck { color: #ff7b72; }
+.cs { color: #a5d6ff; }
+.cf { color: #d2a8ff; }
+.cn { color: #79c0ff; }
+.cc { color: #ffa657; }
+
+/* ── QUIZ ── */
+.quiz-section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+.quiz-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+.quiz-q {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+.quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+.quiz-opt {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-family: var(--display);
+  cursor: pointer;
+  background: var(--bg3);
+  color: var(--text2);
+  text-align: left;
+  transition: all 0.15s;
+}
+.quiz-opt:not(:disabled):hover { border-color: var(--border2); color: var(--text); background: var(--bg2); }
+.quiz-opt.correct { background: var(--green-dim); border-color: var(--green); color: var(--green-light); }
+.quiz-opt.wrong { background: #2d0f0f; border-color: #5a1d1d; color: #ff7b72; }
+.quiz-feedback {
+  margin-top: 1rem;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-family: var(--serif);
+  display: none;
+  line-height: 1.6;
+}
+.quiz-feedback.show { display: block; }
+.quiz-feedback.ok { background: var(--green-dim); color: #a5d6ff; border: 1px solid var(--green); }
+.quiz-feedback.ok::before { content: '✓ '; color: var(--green-light); font-family: var(--mono); }
+.quiz-feedback.err { background: #2d0f0f; color: #ff7b72; border: 1px solid #5a1d1d; }
+.quiz-feedback.err::before { content: '✗ '; font-family: var(--mono); }
+
+/* ── ACTIONS ── */
+.lesson-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+.btn-primary {
+  padding: 10px 20px;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-primary:hover { background: var(--green-light); }
+.btn-ghost {
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--display);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-ghost:hover { border-color: var(--border2); color: var(--text); background: var(--bg3); }
+
+/* ── ROADMAP ── */
+.roadmap-wrap { padding: 0; }
+.roadmap-title { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.roadmap-sub { font-family: var(--serif); font-size: 14px; color: var(--text2); margin-bottom: 2rem; line-height: 1.6; }
+
+.timeline { position: relative; padding-left: 0; }
+.timeline::before { content: ''; position: absolute; left: 27px; top: 28px; bottom: 28px; width: 1px; background: var(--border); }
+
+.tl-step { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.5rem; position: relative; }
+.tl-dot {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex-shrink: 0; font-family: var(--mono); line-height: 1.2;
+  border: 1px solid; z-index: 1;
+}
+.tl-dot span:first-child { font-size: 9px; opacity: 0.7; }
+.tl-dot span:last-child { font-size: 14px; font-weight: 600; }
+.w1 { background: var(--green-dim); border-color: var(--green); color: var(--green-light); }
+.w2 { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+.w3 { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
+.w4 { background: var(--coral-dim); border-color: var(--coral); color: var(--coral); }
+
+.tl-body { padding-top: 10px; }
+.tl-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.tl-desc { font-family: var(--serif); font-size: 13px; color: var(--text2); line-height: 1.7; }
+
+/* ── CHEATSHEETS ── */
+.cs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 1.5rem; }
+.cs-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem; }
+.cs-card-title { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+.cs-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.cs-row:last-child { border-bottom: none; }
+.cs-label { color: var(--text2); }
+.cs-cmd { font-family: var(--mono); font-size: 11px; background: var(--bg3); padding: 2px 6px; border-radius: 4px; color: var(--green-light); flex-shrink: 0; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 3rem;
+}
+footer a { color: var(--green-light); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+.lesson-panel { animation: fadeIn 0.2s ease; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-inner">
+    <a class="logo" href="#">
+      <div class="logo-dot"></div>
+      big-data-course
+    </a>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+      <div class="progress-text" id="prog-text">0 / 9 lessons complete</div>
+    </div>
+    <div class="header-tag">v1.0 · 2026</div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Self-paced learning</div>
+    <h1>Big Data Engineering<br><span>Spark · Dask · AWS</span></h1>
+    <p class="hero-desc">
+      A practical course for geospatial data engineers. Builds on Python, PostGIS &amp; GEE experience to teach distributed computing at scale.
+    </p>
+    <div class="hero-meta">
+      <div class="meta-pill">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 2"/></svg>
+        ~3 hours total
+      </div>
+      <div class="meta-pill">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M5 7h6M5 10h4"/></svg>
+        9 lessons · 3 tracks
+      </div>
+      <div class="meta-pill">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2L10 6l4.5.7-3.2 3.1.7 4.5L8 12l-4 2.3.7-4.5L1.5 6.7 6 6z"/></svg>
+        by Firman Hadi
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN -->
+<div class="main-wrap">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Tracks</div>
+      <button class="track-btn active" onclick="switchTrack('spark')" id="tb-spark">
+        <span class="track-icon">⚡</span> Apache Spark
+      </button>
+      <button class="track-btn" onclick="switchTrack('dask')" id="tb-dask">
+        <span class="track-icon">🔀</span> Dask
+      </button>
+      <button class="track-btn" onclick="switchTrack('aws')" id="tb-aws">
+        <span class="track-icon">☁️</span> AWS
+      </button>
+      <button class="track-btn" onclick="switchTrack('roadmap')" id="tb-roadmap">
+        <span class="track-icon">🗺️</span> Roadmap
+      </button>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Lessons</div>
+      <div id="mod-list"></div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main>
+    <div id="lesson-area"></div>
+    <div id="roadmap-area" style="display:none"></div>
+  </main>
+
+</div>
+
+<footer>
+  Built by <a href="https://firmanhadi21.github.io" target="_blank">Firman Hadi</a> ·
+  <a href="https://github.com/firmanhadi21/spark-dask-aws-course" target="_blank">View on GitHub</a>
+</footer>
+
+<script>
+const completed = new Set();
+
+const tracks = {
+  spark: [
+    {
+      title: "What is Spark?", time: "15 min", level: "beginner",
+      body: `Apache Spark is a distributed computing engine that processes large datasets across a cluster of machines in parallel. Unlike traditional tools that process data sequentially on one machine, Spark splits data into partitions and processes them simultaneously across many nodes.<br><br>For geospatial work, this means you can process a 500 GB land cover dataset in minutes — the kind of analysis that would crash a laptop or take hours in QGIS.`,
+      analogy: { icon: "🌾", text: "Think of Spark like a large harvest team. Instead of one farmer harvesting a huge field row by row (pandas on a laptop), Spark organises 100 farmers to each harvest a small section simultaneously — finishing in a fraction of the time." },
+      concept: "<strong>Lazy evaluation</strong>: Spark's transformations (filter, select, join) build a logical plan without running immediately. Only actions (count, show, write) trigger actual computation. This lets Spark optimise the entire pipeline before running a single line.",
+      code: `<span class="cm"># Setting up a Spark session — your entry point to everything</span>
+<span class="ck">from</span> pyspark.sql <span class="ck">import</span> SparkSession
+
+spark = SparkSession.builder \\
+    .appName(<span class="cs">"LandCoverAnalysis"</span>) \\
+    .config(<span class="cs">"spark.executor.memory"</span>, <span class="cs">"4g"</span>) \\
+    .getOrCreate()
+
+<span class="cm"># Load a large CSV from S3 — distributed automatically</span>
+df = spark.read.csv(
+    <span class="cs">"s3://iwmi-data/land_cover_java.csv"</span>,
+    header=<span class="ck">True</span>, inferSchema=<span class="ck">True</span>
+)
+
+<span class="cm"># Lazy — nothing runs yet, just builds the plan</span>
+df.printSchema()
+df.show(<span class="cc">5</span>)
+
+<span class="cm"># count() is an ACTION — this triggers computation</span>
+print(<span class="cs">f"Total records: {df.count()}"</span>)`,
+      quiz: {
+        q: "In Spark, what is the difference between a transformation and an action?",
+        opts: ["Transformations run immediately; actions are lazy", "Transformations are lazy and build a plan; actions trigger actual execution", "Actions are faster than transformations", "There is no difference — both execute immediately"],
+        correct: 1,
+        feedback: "Correct! Spark uses lazy evaluation — transformations like filter() and select() build a logical plan without running. Only actions like count(), show(), or write() trigger computation. This lets Spark optimise the whole pipeline first."
+      }
+    },
+    {
+      title: "DataFrames & SQL", time: "20 min", level: "beginner",
+      body: `Spark DataFrames are the primary way to work with structured data. If you know pandas or SQL, you already know most of the API. Spark also lets you run actual SQL queries directly against DataFrames — extremely useful for complex data transformations on large datasets.`,
+      analogy: { icon: "🗺️", text: "Think of a Spark DataFrame as a PostGIS table — but instead of being stored on one database server, it's partitioned across dozens of nodes. Just like PostGIS, you can filter, join, group, and aggregate with familiar syntax." },
+      concept: "<strong>Key difference from pandas</strong>: Spark DataFrames are immutable. Every operation returns a new DataFrame. This is what enables fault tolerance — if a node fails, Spark can recompute the result from the original data using the stored transformation plan.",
+      code: `<span class="ck">from</span> pyspark.sql.functions <span class="ck">import</span> col, count, avg
+
+<span class="cm"># Filter, group, aggregate</span>
+summary = df.filter(col(<span class="cs">"ndvi"</span>) > <span class="cc">0.3</span>) \\
+    .groupBy(<span class="cs">"land_cover_class"</span>) \\
+    .agg(
+        count(<span class="cs">"*"</span>).alias(<span class="cs">"pixel_count"</span>),
+        avg(<span class="cs">"ndvi"</span>).alias(<span class="cs">"mean_ndvi"</span>)
+    )
+
+<span class="cm"># Register as temp view to use SQL directly</span>
+df.createOrReplaceTempView(<span class="cs">"land_cover"</span>)
+
+result = spark.sql(<span class="cs">"""
+    SELECT land_cover_class,
+           COUNT(*) AS area_pixels,
+           AVG(ndvi) AS avg_ndvi
+    FROM land_cover
+    WHERE year = 2023
+    GROUP BY land_cover_class
+    ORDER BY area_pixels DESC
+"""</span>)
+result.show()`,
+      quiz: {
+        q: "You filter a Spark DataFrame for rows where ndvi > 0.5 then call count(). When does the filtering actually execute?",
+        opts: ["When you call filter()", "When you call count() — actions trigger execution", "Both run instantly regardless of order", "You must call compute() first"],
+        correct: 1,
+        feedback: "Correct! filter() is a lazy transformation — it just adds to the execution plan. count() is an action that triggers the actual distributed computation. Spark optimises both steps together before running."
+      }
+    },
+    {
+      title: "Spark + Sedona for geospatial", time: "25 min", level: "intermediate",
+      body: `Apache Sedona (formerly GeoSpark) extends Spark with native spatial data types and functions — think of it as PostGIS for distributed Spark clusters. It can process hundreds of millions of geometries in parallel and integrates directly with GeoTIFF, GeoJSON, and Parquet. This is the kind of stack used for global-scale water and land data analysis.`,
+      analogy: { icon: "🛰️", text: "If regular Spark is a distributed pandas, Apache Sedona is a distributed GeoPandas — with spatial indexing, geometry operations, CRS transformations, and raster processing running across a cluster." },
+      concept: "<strong>Key Sedona SQL functions</strong>: ST_Contains, ST_Intersects, ST_Distance, ST_Transform (CRS conversion), ST_Area, and raster operations. Sedona reads GeoTIFF and GeoJSON natively from S3 and integrates with Google Earth Engine outputs.",
+      code: `<span class="ck">from</span> sedona.register <span class="ck">import</span> SedonaRegistrator
+<span class="ck">from</span> sedona.utils <span class="ck">import</span> SedonaKryoRegistrator, KryoSerializer
+
+spark = SparkSession.builder \\
+    .config(<span class="cs">"spark.serializer"</span>, KryoSerializer.getName) \\
+    .config(<span class="cs">"spark.kryo.registrator"</span>, SedonaKryoRegistrator.getName) \\
+    .getOrCreate()
+
+SedonaRegistrator.registerAll(spark)
+
+<span class="cm"># Load spatial datasets from S3</span>
+flood_zones = spark.read.format(<span class="cs">"geojson"</span>) \\
+    .load(<span class="cs">"s3://iwmi-data/flood_zones_asia.geojson"</span>)
+irrigation = spark.read.format(<span class="cs">"geojson"</span>) \\
+    .load(<span class="cs">"s3://iwmi-data/irrigation_schemes.geojson"</span>)
+
+flood_zones.createOrReplaceTempView(<span class="cs">"floods"</span>)
+irrigation.createOrReplaceTempView(<span class="cs">"irrigation"</span>)
+
+<span class="cm"># Distributed spatial join — find irrigation in 100yr flood zones</span>
+at_risk = spark.sql(<span class="cs">"""
+    SELECT i.scheme_id, i.country, i.area_ha
+    FROM irrigation i, floods f
+    WHERE ST_Intersects(i.geometry, f.geometry)
+      AND f.return_period = 100
+"""</span>)
+at_risk.show()`,
+      quiz: {
+        q: "Why would you use Apache Sedona instead of GeoPandas for a global irrigation analysis across 50 million polygons?",
+        opts: ["Sedona has better map visualisation", "Sedona processes data in parallel across a cluster — GeoPandas runs on a single machine and would exhaust memory", "GeoPandas doesn't support CRS transformations", "Sedona is easier to install"],
+        correct: 1,
+        feedback: "Correct! GeoPandas is single-node and would run out of memory with 50M polygons. Sedona distributes spatial operations across a Spark cluster, making global-scale geospatial analysis feasible."
+      }
+    }
+  ],
+  dask: [
+    {
+      title: "Dask vs Spark: when to use which", time: "15 min", level: "beginner",
+      body: `Dask is a flexible parallel computing library for Python that scales your existing NumPy, pandas, and Xarray code to larger-than-memory datasets. Unlike Spark (a JVM-based system designed for cluster computing), Dask lives natively in the Python ecosystem and feels like an extension of tools you already use.`,
+      analogy: { icon: "🔬", text: "Spark is like a purpose-built industrial facility — powerful, but requires setup. Dask is like upgrading your existing laboratory equipment to run in parallel — it works with your current tools (pandas, NumPy, Xarray) and scales them without switching paradigms." },
+      concept: "<strong>Rule of thumb</strong>: Use Dask when your data fits in a cluster of RAM (TBs) and you want to stay in the Python ecosystem. Use Spark when you need ANSI SQL, structured streaming, or a mature production ETL pipeline at petabyte scale.",
+      code: `<span class="ck">import</span> dask.dataframe <span class="ck">as</span> dd
+
+<span class="cm"># Read multiple large CSVs — doesn't fit in RAM</span>
+ddf = dd.read_csv(<span class="cs">"s3://iwmi-data/streamflow_daily_*.csv"</span>)
+
+<span class="cm"># Same syntax as pandas — lazy by default</span>
+filtered = ddf[ddf[<span class="cs">"flow_m3s"</span>] > <span class="cc">500</span>]
+monthly = filtered.groupby(<span class="cs">"month"</span>)[<span class="cs">"flow_m3s"</span>].mean()
+
+<span class="cm"># .compute() triggers actual execution</span>
+result = monthly.compute()
+print(result)
+
+<span class="cm"># Dask + Xarray for raster/climate data</span>
+<span class="ck">import</span> xarray <span class="ck">as</span> xr
+
+ds = xr.open_mfdataset(
+    <span class="cs">"s3://iwmi-data/era5_precip_*.nc"</span>,
+    chunks={<span class="cs">"time"</span>: <span class="cc">100</span>},
+    engine=<span class="cs">"netcdf4"</span>
+)
+annual_mean = ds[<span class="cs">"tp"</span>].resample(time=<span class="cs">"1Y"</span>).mean()
+result = annual_mean.compute()`,
+      quiz: {
+        q: "You have 80 GB of Sentinel-2 NDVI time series in CSV files. Your laptop has 16 GB RAM. Which tool is most appropriate?",
+        opts: ["Regular pandas — just increase swap memory", "Dask — scales pandas to larger-than-memory data without leaving Python", "Spark — always better than Dask for any large data", "Neither — downsample the data first"],
+        correct: 1,
+        feedback: "Correct! Dask reads data in chunks and processes them lazily. No cluster setup needed. Spark would work too but is heavier to configure for this scale and file type."
+      }
+    },
+    {
+      title: "Dask + Xarray for climate data", time: "25 min", level: "intermediate",
+      body: `The Dask + Xarray combination is the standard stack for climate and hydrological data science. Xarray adds labelled dimensions and coordinates to NumPy arrays, making it natural for multi-dimensional datasets like ERA5, CHIRPS rainfall, or Sentinel-5P atmospheric data. Dask makes the processing parallel and out-of-core.`,
+      analogy: { icon: "🌧️", text: "If a NumPy array is a plain grid of numbers, Xarray is that grid with labels — 'latitude', 'longitude', 'time'. Dask makes that labelled grid process in parallel across memory chunks. Together they are the raster calculator for big climate data." },
+      concept: "<strong>Chunking strategy matters</strong>: Choose chunk sizes that fit comfortably in memory (100–500 MB each). For time series analysis, chunk by time. For spatial operations, chunk by spatial tiles. Wrong chunking can cause 10× slowdowns.",
+      code: `<span class="ck">import</span> xarray <span class="ck">as</span> xr
+
+<span class="cm"># Open multi-file CHIRPS dataset with Dask chunks</span>
+chirps = xr.open_mfdataset(
+    <span class="cs">"s3://iwmi-data/chirps/chirps_2000_*.nc"</span>,
+    chunks={<span class="cs">"time"</span>: <span class="cc">365</span>, <span class="cs">"lat"</span>: <span class="cc">200</span>, <span class="cs">"lon"</span>: <span class="cc">200</span>},
+    combine=<span class="cs">"by_coords"</span>
+)
+
+<span class="cm"># Subset to South/Southeast Asia</span>
+asia = chirps.sel(lat=slice(<span class="cc">-10</span>, <span class="cc">40</span>), lon=slice(<span class="cc">60</span>, <span class="cc">140</span>))
+
+<span class="cm"># Annual rainfall sum — still lazy</span>
+annual = asia[<span class="cs">"precip"</span>].resample(time=<span class="cs">"1Y"</span>).sum(dim=<span class="cs">"time"</span>)
+
+<span class="cm"># Detect drought years (below 60% of long-term mean)</span>
+lt_mean = annual.mean(dim=<span class="cs">"time"</span>)
+drought_mask = annual < (lt_mean * <span class="cc">0.6</span>)
+
+<span class="cm"># Trigger computation with progress bar</span>
+<span class="ck">from</span> dask.diagnostics <span class="ck">import</span> ProgressBar
+<span class="ck">with</span> ProgressBar():
+    drought_years = drought_mask.compute()`,
+      quiz: {
+        q: "When using Xarray + Dask on a 20-year daily ERA5 dataset, why does chunking strategy matter?",
+        opts: ["It only affects file size, not performance", "Poor chunking causes excessive memory usage and slow I/O — chunks should match your analysis pattern", "Xarray doesn't actually use Dask chunks", "Chunks must always be equal in size"],
+        correct: 1,
+        feedback: "Correct! If you chunk by time but do spatial operations, Dask must load many chunks to process a single spatial area. Matching chunk shape to your operation pattern is critical for performance."
+      }
+    },
+    {
+      title: "Dask distributed & schedulers", time: "20 min", level: "intermediate",
+      body: `By default, Dask runs on your local machine using all available CPU cores. For bigger workloads, you can deploy a Dask cluster — either locally with multiple processes, or on cloud infrastructure like AWS EC2. The Dask Dashboard gives you a real-time view of task execution, memory usage, and worker status.`,
+      analogy: { icon: "🖥️", text: "The Dask scheduler is like a project manager assigning tasks. The synchronous scheduler is one manager doing all the work themselves. The distributed scheduler is a manager coordinating 50 workers across different machines — with a live dashboard showing everyone's progress." },
+      concept: "<strong>Three scheduler options</strong>: (1) Synchronous — single-threaded, great for debugging. (2) Threaded — parallel on one machine, good for NumPy/Xarray. (3) Distributed — scales across multiple machines or AWS workers, needed for truly large workloads.",
+      code: `<span class="ck">from</span> dask.distributed <span class="ck">import</span> Client, LocalCluster
+
+<span class="cm"># Start a local cluster (4 workers, 2 threads each)</span>
+cluster = LocalCluster(n_workers=<span class="cc">4</span>, threads_per_worker=<span class="cc">2</span>)
+client = Client(cluster)
+print(client.dashboard_link)  <span class="cm"># Opens live task monitor</span>
+
+<span class="cm"># Or connect to a remote cluster</span>
+client = Client(<span class="cs">"tcp://scheduler-address:8786"</span>)
+
+<span class="cm"># Submit tasks explicitly across workers</span>
+<span class="ck">def</span> <span class="cf">process_tile</span>(tile_path):
+    ds = xr.open_dataset(tile_path)
+    <span class="ck">return</span> ds[<span class="cs">"ndvi"</span>].mean().values
+
+tile_paths = [<span class="cs">f"s3://iwmi/tiles/tile_{i}.nc"</span>
+              <span class="ck">for</span> i <span class="ck">in</span> range(<span class="cc">100</span>)]
+
+futures = client.map(process_tile, tile_paths)
+results = client.gather(futures)`,
+      quiz: {
+        q: "You need to process 500 GeoTIFF tiles simultaneously on AWS. Which Dask approach is most appropriate?",
+        opts: ["Use the default single-threaded scheduler", "Use LocalCluster on one EC2 instance", "Use the distributed scheduler with a Dask cluster across multiple EC2 workers", "Convert all files to CSV first, then use pandas"],
+        correct: 2,
+        feedback: "Correct! For 500 tiles on AWS, you need the distributed scheduler with multiple EC2 workers. LocalCluster on one machine won't scale sufficiently."
+      }
+    }
+  ],
+  aws: [
+    {
+      title: "S3: the geospatial data lake", time: "20 min", level: "beginner",
+      body: `Amazon S3 (Simple Storage Service) is the foundational storage layer for cloud-based data infrastructure. Think of it as a massively scalable, globally accessible file system for your geospatial data — satellite imagery, climate datasets, vector files, model outputs. All AWS services (EMR, Lambda, Athena) are built to read directly from S3.`,
+      analogy: { icon: "🪣", text: "S3 is like a virtually unlimited, pay-as-you-go hard drive in the cloud. Instead of paths like /home/firman/data/, you use S3 URIs: s3://iwmi-data/sentinel2/2024/. Any AWS service, Spark cluster, or Python script with credentials can access it directly." },
+      concept: "<strong>Cloud-Optimised GeoTIFF (COG)</strong> and Zarr/NetCDF are the preferred formats for raster data in S3. They allow range requests — Spark/Dask downloads only the spatial tile it needs, not the entire file. This is critical for performance and cost.",
+      code: `<span class="ck">import</span> boto3
+<span class="ck">import</span> rioxarray
+
+s3 = boto3.client(<span class="cs">'s3'</span>)
+
+<span class="cm"># List objects in a bucket/prefix</span>
+response = s3.list_objects_v2(
+    Bucket=<span class="cs">'iwmi-data'</span>,
+    Prefix=<span class="cs">'satellite/sentinel2/java/2024/'</span>
+)
+<span class="ck">for</span> obj <span class="ck">in</span> response[<span class="cs">'Contents'</span>]:
+    print(obj[<span class="cs">'Key'</span>], obj[<span class="cs">'Size'</span>])
+
+<span class="cm"># Read COG directly from S3 — only fetches needed tiles</span>
+ds = rioxarray.open_rasterio(
+    <span class="cs">"s3://iwmi-data/landcover/java_2023_cog.tif"</span>,
+    chunks={<span class="cs">"x"</span>: <span class="cc">512</span>, <span class="cs">"y"</span>: <span class="cc">512</span>}
+)
+
+<span class="cm"># Upload processed result back to S3</span>
+s3.upload_file(
+    <span class="cs">'output/flood_risk_map.geojson'</span>,
+    <span class="cs">'iwmi-data'</span>,
+    <span class="cs">'outputs/flood_risk_java_2024.geojson'</span>
+)`,
+      quiz: {
+        q: "Why is Cloud-Optimised GeoTIFF (COG) preferred over regular GeoTIFF for data stored in S3?",
+        opts: ["COG files are always smaller", "COG allows HTTP range requests — clients download only the spatial subset they need, not the entire file", "COG files load faster in QGIS", "COG is required by AWS policy"],
+        correct: 1,
+        feedback: "Correct! COGs are internally tiled and support HTTP range requests. Spark/Dask fetches only the relevant spatial window — dramatically reducing data transfer costs and speeds up analysis."
+      }
+    },
+    {
+      title: "EMR: running Spark on AWS", time: "25 min", level: "intermediate",
+      body: `AWS EMR (Elastic MapReduce) is Amazon's managed Spark service. Instead of setting up your own cluster, EMR provisions EC2 machines, installs Spark, and manages the cluster lifecycle. You pay only for the time the cluster runs — making it ideal for batch geospatial processing jobs.`,
+      analogy: { icon: "🏭", text: "EMR is like renting a fully-equipped factory for a day instead of buying and maintaining one. You specify how many machines you need, run your Spark job on terabytes of S3 data, then shut everything down. You only pay for those hours." },
+      concept: "<strong>EMR architecture</strong>: One Master node (coordinates jobs) + N Core nodes (store data + process) + optional Task nodes (process only, can use cheap Spot instances). For geospatial batch jobs, a typical setup is 1 master + 4–10 core nodes of r5.xlarge (memory-optimised).",
+      code: `<span class="cm"># Create EMR cluster and run Spark job (AWS CLI)</span>
+
+aws emr create-cluster \\
+  --name <span class="cs">"LandCoverAnalysis-Java2024"</span> \\
+  --release-label emr-6.15.0 \\
+  --applications Name=Spark \\
+  --instance-groups \\
+    InstanceGroupType=MASTER,InstanceCount=1,InstanceType=m5.xlarge \\
+    InstanceGroupType=CORE,InstanceCount=4,InstanceType=r5.2xlarge \\
+  --steps Type=Spark,Name=<span class="cs">"classify"</span>, \\
+    Args=[<span class="cs">"--deploy-mode"</span>,<span class="cs">"cluster"</span>, \\
+          <span class="cs">"s3://iwmi-scripts/classify_lc.py"</span>, \\
+          <span class="cs">"--input"</span>,<span class="cs">"s3://iwmi-data/sentinel2/java/"</span>, \\
+          <span class="cs">"--output"</span>,<span class="cs">"s3://iwmi-outputs/java_lc_2024/"</span>] \\
+  --auto-terminate \\
+  --log-uri s3://iwmi-logs/emr/
+
+<span class="cm"># In your PySpark script (classify_lc.py):</span>
+<span class="ck">import</span> sys
+<span class="ck">from</span> pyspark.sql <span class="ck">import</span> SparkSession
+
+input_path  = sys.argv[sys.argv.index(<span class="cs">"--input"</span>)  + <span class="cc">1</span>]
+output_path = sys.argv[sys.argv.index(<span class="cs">"--output"</span>) + <span class="cc">1</span>]
+
+spark = SparkSession.builder.appName(<span class="cs">"LandCover"</span>).getOrCreate()
+df = spark.read.parquet(input_path)
+<span class="cm"># ... classification logic ...</span>
+df.write.parquet(output_path)`,
+      quiz: {
+        q: "A monthly Sentinel-2 classification job takes 3 hours and runs once per month. What is the most cost-effective EMR strategy?",
+        opts: ["Keep a permanent EMR cluster running 24/7", "Use --auto-terminate to shut down after the job completes", "Run it on a single EC2 instance instead", "Use AWS Lambda (serverless)"],
+        correct: 1,
+        feedback: "Correct! --auto-terminate shuts down the cluster when the job finishes, so you only pay for ~3 hours per month. A persistent cluster would cost ~30× more. Lambda has a 15-minute timeout, too short for this job."
+      }
+    },
+    {
+      title: "Lambda & Athena: serverless pipelines", time: "20 min", level: "intermediate",
+      body: `AWS Lambda runs Python code on demand without server management — triggered by events like a new S3 upload or API call. AWS Athena runs SQL queries directly against files in S3 (CSV, Parquet, GeoJSON) without loading data into a database. Together they enable lightweight, event-driven data pipelines.`,
+      analogy: { icon: "⚡", text: "Lambda is like a light switch — no power flows until you flip it, runs instantly, then stops. Athena is like asking a librarian to find information in a warehouse — you don't move all the books to a database first, you query them where they sit." },
+      concept: "<strong>Lambda limits</strong>: max 15 minutes execution, 10 GB memory, 512 MB disk. Perfect for file conversion, notifications, lightweight processing. <strong>Athena</strong> charges per TB scanned — use Parquet format to reduce costs by 10–100× versus CSV.",
+      code: `<span class="ck">import</span> boto3, json, rasterio
+<span class="ck">from</span> io <span class="ck">import</span> BytesIO
+
+s3 = boto3.client(<span class="cs">'s3'</span>)
+
+<span class="cm"># Lambda: auto-extract metadata when new file uploaded</span>
+<span class="ck">def</span> <span class="cf">lambda_handler</span>(event, context):
+    bucket = event[<span class="cs">'Records'</span>][<span class="cc">0</span>][<span class="cs">'s3'</span>][<span class="cs">'bucket'</span>][<span class="cs">'name'</span>]
+    key    = event[<span class="cs">'Records'</span>][<span class="cc">0</span>][<span class="cs">'s3'</span>][<span class="cs">'object'</span>][<span class="cs">'key'</span>]
+
+    obj = s3.get_object(Bucket=bucket, Key=key)
+    <span class="ck">with</span> rasterio.open(BytesIO(obj[<span class="cs">'Body'</span>].read())) <span class="ck">as</span> src:
+        meta = {<span class="cs">'crs'</span>: str(src.crs),
+                <span class="cs">'bounds'</span>: list(src.bounds),
+                <span class="cs">'size'</span>: [src.width, src.height]}
+
+    s3.put_object(Bucket=bucket,
+                  Key=key.replace(<span class="cs">'.tif'</span>, <span class="cs">'_meta.json'</span>),
+                  Body=json.dumps(meta))
+    <span class="ck">return</span> {<span class="cs">'statusCode'</span>: <span class="cc">200</span>}
+
+<span class="cm"># Athena: query Parquet files in S3 with SQL</span>
+athena = boto3.client(<span class="cs">'athena'</span>)
+athena.start_query_execution(
+    QueryString=<span class="cs">"""
+        SELECT country, land_cover_class, SUM(area_ha) AS total_ha
+        FROM iwmi_landcover_catalog
+        WHERE year = 2024 AND continent = 'Asia'
+        GROUP BY country, land_cover_class
+    """</span>,
+    QueryExecutionContext={<span class="cs">'Database'</span>: <span class="cs">'iwmi_data'</span>},
+    ResultConfiguration={<span class="cs">'OutputLocation'</span>: <span class="cs">'s3://iwmi-results/'</span>}
+)`,
+      quiz: {
+        q: "IWMI wants to query a 5 TB Parquet catalogue of global land cover pixels in S3 without setting up a database. What service should they use?",
+        opts: ["RDS (relational database)", "AWS EMR with Spark", "AWS Athena — queries Parquet in S3 directly with SQL", "AWS Lambda — runs the SQL serverlessly"],
+        correct: 2,
+        feedback: "Correct! Athena queries files directly in S3 using SQL — no database setup required. Parquet format dramatically reduces data scanned and cost. EMR/Spark would work but is heavier for ad-hoc queries."
+      }
+    }
+  ]
+};
+
+const roadmap = [
+  { week: "Week 1", cls: "w1", name: "Spark fundamentals", desc: "Install PySpark locally. Complete Spark modules 1–2. Practice: load a CSV of NDVI values and run groupBy + agg. Goal: understand lazy evaluation, DataFrames, and the SparkSession." },
+  { week: "Week 2", cls: "w2", name: "Dask + climate data", desc: "Install Dask and Xarray. Complete all Dask modules. Practice: open a multi-file ERA5 or CHIRPS NetCDF with chunking. Compute annual rainfall anomalies. Run the Dask Dashboard locally." },
+  { week: "Week 3", cls: "w3", name: "AWS fundamentals", desc: "Create a free-tier AWS account. Complete S3 + Lambda modules. Upload a GeoTIFF to S3 with boto3, read it back with rioxarray. Write a Lambda function triggered by S3 upload." },
+  { week: "Week 4", cls: "w4", name: "Integration + interview prep", desc: "Complete EMR + Athena modules. Build a mini-pipeline: GeoTIFF on S3 → Lambda extracts metadata → Athena queries results. Review cheatsheets. Practice explaining each tool in plain English." }
+];
+
+const cheatsheets = [
+  { title: "Spark", items: [["Start session","SparkSession.builder"],["Read CSV","spark.read.csv()"],["Filter","df.filter(col > x)"],["Group + agg","df.groupBy().agg()"],["Run SQL","spark.sql('...')"],["Trigger exec",".count() / .show()"],["Write","df.write.parquet()"]] },
+  { title: "Dask", items: [["Read CSV","dd.read_csv('*.csv')"],["Read raster","xr.open_mfdataset()"],["Trigger","  .compute()"],["Local cluster","LocalCluster()"],["Resample",".resample(time='1Y')"],["Spatial subset",".sel(lat=slice(...))"],["Progress","ProgressBar()"]] },
+  { title: "AWS S3 + boto3", items: [["List objects","s3.list_objects_v2()"],["Upload","s3.upload_file()"],["Read COG","rioxarray.open_rasterio()"],["S3 URI","s3://bucket/key"],["Best format","COG / Parquet"],["Query in place","Athena SQL"]] },
+  { title: "EMR", items: [["Create cluster","aws emr create-cluster"],["Auto shutdown","--auto-terminate"],["Master","1× m5.xlarge"],["Core nodes","4–10× r5.2xlarge"],["Submit job","--steps Type=Spark"],["Logs","--log-uri s3://..."]] }
+];
+
+let currentTrack = 'spark';
+let currentMod = { spark: 0, dask: 0, aws: 0 };
+
+function updateProgress() {
+  const total = Object.values(tracks).reduce((a, t) => a + t.length, 0);
+  const done = completed.size;
+  const pct = Math.round(done / total * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = `${done} / ${total} lessons complete`;
+}
+
+function renderSidebar() {
+  const track = currentTrack;
+  const mods = tracks[track] || [];
+  const el = document.getElementById('mod-list');
+  if (track === 'roadmap') { el.innerHTML = ''; return; }
+  el.innerHTML = mods.map((m, i) => {
+    const key = track + i;
+    const isDone = completed.has(key);
+    const isActive = i === currentMod[track];
+    return `<button class="mod-item ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}" onclick="selectMod('${track}',${i})">
+      <span class="mod-num">${isDone ? '✓' : i + 1}</span>
+      ${m.title}
+    </button>`;
+  }).join('');
+}
+
+function renderLesson(track) {
+  const m = tracks[track][currentMod[track]];
+  const idx = currentMod[track];
+  const key = track + idx;
+  const codeId = 'code-' + track + idx;
+
+  document.getElementById('lesson-area').style.display = '';
+  document.getElementById('roadmap-area').style.display = 'none';
+
+  document.getElementById('lesson-area').innerHTML = `
+  <div class="lesson-panel">
+    <div class="lesson-header">
+      <div class="lesson-title-block">
+        <div class="lesson-breadcrumb">${track.toUpperCase()} · Lesson ${idx + 1} of ${tracks[track].length}</div>
+        <h2>${m.title}</h2>
+        <span class="badge badge-${m.level}">${m.level}</span>
+      </div>
+    </div>
+
+    <div class="lesson-body">${m.body}</div>
+
+    ${m.analogy ? `<div class="analogy-box"><div class="analogy-icon">${m.analogy.icon}</div><div class="analogy-text">${m.analogy.text}</div></div>` : ''}
+
+    <div class="concept-box">${m.concept}</div>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-lang"><div class="code-lang-dot"></div> python</div>
+        <button class="copy-btn" onclick="copyCode('${codeId}', this)">copy</button>
+      </div>
+      <pre id="${codeId}">${m.code}</pre>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-label">Knowledge check</div>
+      <div class="quiz-q">${m.quiz.q}</div>
+      <div class="quiz-opts">
+        ${m.quiz.opts.map((o, i) => `<button class="quiz-opt" onclick="answer('${track}',${idx},${i},${m.quiz.correct})">${o}</button>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="qf-${track}-${idx}"></div>
+    </div>
+
+    <div class="lesson-actions">
+      <button class="btn-primary" onclick="markDone('${track}',${idx})">${completed.has(key) ? '✓ Completed' : 'Mark complete'}</button>
+      ${idx < tracks[track].length - 1 ? `<button class="btn-ghost" onclick="selectMod('${track}',${idx + 1})">Next lesson →</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderRoadmap() {
+  document.getElementById('lesson-area').style.display = 'none';
+  document.getElementById('roadmap-area').style.display = '';
+  document.getElementById('roadmap-area').innerHTML = `
+    <div class="roadmap-wrap">
+      <div class="roadmap-title">4-week study plan</div>
+      <div class="roadmap-sub">Optimised for Python + GIS proficiency. Builds toward production-level big data engineering.</div>
+      <div class="timeline">
+        ${roadmap.map(s => `
+          <div class="tl-step">
+            <div class="tl-dot ${s.cls}"><span>${s.week.replace('Week ', 'W')}</span></div>
+            <div class="tl-body">
+              <div class="tl-name">${s.name}</div>
+              <div class="tl-desc">${s.desc}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top:2rem">
+        <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:4px">Quick reference cheatsheets</div>
+        <div style="font-size:13px;color:var(--text2);font-family:var(--serif);margin-bottom:1rem">Keep these open while practising.</div>
+        <div class="cs-grid">
+          ${cheatsheets.map(cs => `
+            <div class="cs-card">
+              <div class="cs-card-title">${cs.title}</div>
+              ${cs.items.map(([label, cmd]) => `
+                <div class="cs-row">
+                  <span class="cs-label">${label}</span>
+                  <span class="cs-cmd">${cmd}</span>
+                </div>`).join('')}
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+function selectMod(track, i) {
+  currentMod[track] = i;
+  renderSidebar();
+  renderLesson(track);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function switchTrack(t) {
+  currentTrack = t;
+  ['spark', 'dask', 'aws', 'roadmap'].forEach(tr => {
+    document.getElementById('tb-' + tr).className = 'track-btn' + (tr === t ? ' active' : '');
+  });
+  renderSidebar();
+  if (t === 'roadmap') renderRoadmap();
+  else renderLesson(t);
+}
+
+function answer(track, modIdx, chosen, correct) {
+  const opts = document.querySelectorAll(`#lesson-area .quiz-opt`);
+  opts.forEach((o, i) => {
+    o.disabled = true;
+    if (i === correct) o.classList.add('correct');
+    else if (i === chosen && chosen !== correct) o.classList.add('wrong');
+  });
+  const fb = document.getElementById(`qf-${track}-${modIdx}`);
+  const m = tracks[track][modIdx];
+  fb.textContent = m.quiz.feedback;
+  fb.className = `quiz-feedback show ${chosen === correct ? 'ok' : 'err'}`;
+}
+
+function markDone(track, i) {
+  completed.add(track + i);
+  updateProgress();
+  renderSidebar();
+  renderLesson(track);
+}
+
+function copyCode(id, btn) {
+  const el = document.getElementById(id);
+  const text = el.innerText || el.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// Init
+renderSidebar();
+renderLesson('spark');
+updateProgress();
+</script>
+</body>
+</html>
